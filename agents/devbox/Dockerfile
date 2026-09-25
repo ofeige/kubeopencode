@@ -78,7 +78,7 @@ RUN for i in $(seq 1 $RETRY_COUNT); do \
     done
 
 # === Go ===
-ARG GO_VERSION=1.25.5
+ARG GO_VERSION=1.26.3
 RUN for i in $(seq 1 $RETRY_COUNT); do \
       ARCH=$(dpkg --print-architecture) \
       && curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz" -o /tmp/go.tar.gz \
@@ -149,6 +149,15 @@ RUN for i in $(seq 1 $RETRY_COUNT); do \
 # === Zsh ===
 RUN apt-get update && apt-get install -y --no-install-recommends zsh \
     && rm -rf /var/lib/apt/lists/*
+
+# Debian's login profile resets PATH, including the PATH from the image config.
+# OpenCode starts tool shells as login shells, so restore Go after that reset.
+RUN printf '%s\n' 'export PATH="/usr/local/go/bin:/tmp/.local/bin:/tmp/.go/bin:$PATH"' \
+      > /etc/profile.d/kubeopencode-devbox-path.sh \
+    && printf '%s\n' 'export PATH="/usr/local/go/bin:/tmp/.local/bin:/tmp/.go/bin:$PATH"' \
+      >> /etc/bash.bashrc \
+    && printf '%s\n' 'export PATH="/usr/local/go/bin:/tmp/.local/bin:/tmp/.go/bin:$PATH"' \
+      >> /etc/zsh/zshrc
 
 # === LSP Servers ===
 # Language Server Protocol servers for AI agent code intelligence.
@@ -240,6 +249,9 @@ RUN mkdir -p /tmp/.config /tmp/.cache /tmp/.local/share \
 
 # Switch to non-root user (any UID works with /tmp as HOME)
 USER 1000:0
+
+# Verify Go remains available through the non-root login shell used by tasks.
+RUN /bin/bash -lc 'command -v go && go version && command -v gofmt'
 
 WORKDIR ${WORKSPACE_DIR}
 
