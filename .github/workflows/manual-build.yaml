@@ -138,6 +138,8 @@ jobs:
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            OPENCODE_VERSION=1.18.32
           tags: |
             ${{ env.IMG_REGISTRY }}/${{ env.IMG_ORG }}/kubeopencode-agent-opencode:latest
             ${{ env.IMG_REGISTRY }}/${{ env.IMG_ORG }}/kubeopencode-agent-opencode:${{ github.sha }}
