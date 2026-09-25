@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     gnupg \
     procps \
+    ripgrep \
     make \
     gcc \
     g++ \
@@ -251,7 +252,7 @@ RUN mkdir -p /tmp/.config /tmp/.cache /tmp/.local/share \
 USER 1000:0
 
 # Verify Go remains available through the non-root login shell used by tasks.
-RUN /bin/bash -lc 'command -v go && go version && command -v gofmt'
+RUN /bin/bash -lc 'command -v go && go version && command -v gofmt && command -v rg && rg --version'
 
 WORKDIR ${WORKSPACE_DIR}
 
