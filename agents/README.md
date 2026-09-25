@@ -84,6 +84,7 @@ The universal devbox image (`kubeopencode-agent-devbox`) provides a comprehensiv
 | gcc, g++ | C/C++ compilers |
 | jq | JSON processor |
 | yq | YAML processor |
+| ripgrep (`rg`) | Debian package | Fast recursive code search |
 | vim, nano | Text editors |
 | tree, htop | Utilities |
 
