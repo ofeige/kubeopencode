@@ -239,9 +239,10 @@ jobs:
       - name: Get latest v1.x OpenCode version from github.com/anomalyco/opencode/releases
         id: opencode-version
         run: |
-          VERSION=$(curl -s "https://api.github.com/repos/anomalyco/opencode/releases?per_page=100" \
-            | jq -r '[.[] | select(.prerelease == false) | .tag_name | select(startswith("v1."))][0]' \
+          VERSION=$(curl --fail --retry 5 --retry-all-errors -sSL "https://api.github.com/repos/anomalyco/opencode/releases/latest" \
+            | jq -er '.tag_name | select(startswith("v1."))' \
             | sed 's/^v//')
+          test -n "${VERSION}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Build and push opencode agent
