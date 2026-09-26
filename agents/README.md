@@ -64,7 +64,7 @@ The universal devbox image (`kubeopencode-agent-devbox`) provides a comprehensiv
 | Go | 1.26.3 | Go programming language |
 | Node.js | 22.x LTS | JavaScript runtime |
 | Python | 3.x | Python interpreter + pip + venv |
-| golangci-lint | latest | Go linter |
+| golangci-lint | 2.14.0 | Go linter |
 
 ### Cloud & Kubernetes Tools
 | Tool | Description |
