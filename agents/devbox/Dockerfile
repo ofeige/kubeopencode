@@ -90,10 +90,22 @@ RUN for i in $(seq 1 $RETRY_COUNT); do \
 ENV PATH="/usr/local/go/bin:${PATH}"
 
 # === golangci-lint ===
-RUN for i in $(seq 1 $RETRY_COUNT); do \
-      curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /usr/local/bin \
-      && break || { echo "Retry $i/$RETRY_COUNT failed, waiting ${RETRY_DELAY}s..."; sleep $RETRY_DELAY; }; \
-    done
+ARG GOLANGCI_LINT_VERSION=2.14.0
+RUN set -eu; \
+    arch="$(dpkg --print-architecture)"; \
+    case "$arch" in \
+      amd64) checksum="ab90aeb7b066f92a33415b638a50fe5344bbb75a0d32ad30cc248d88f81032ab" ;; \
+      arm64) checksum="ee7ec5f3453d15ddf106fae5a4d6c71737712348a979d1fe9cd52ec7ea299bae" ;; \
+      *) printf 'Unsupported architecture for golangci-lint: %s\n' "$arch" >&2; exit 1 ;; \
+    esac; \
+    archive="/tmp/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-${arch}.tar.gz"; \
+    curl -fsSL --retry 3 --retry-all-errors \
+      "https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-${arch}.tar.gz" \
+      -o "$archive"; \
+    printf '%s  %s\n' "$checksum" "$archive" | sha256sum --check --status; \
+    tar -xzf "$archive" -C /tmp; \
+    install -m 0755 "/tmp/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-${arch}/golangci-lint" /usr/local/bin/golangci-lint; \
+    rm -rf "/tmp/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-${arch}" "$archive"
 
 # === Node.js (LTS) ===
 RUN for i in $(seq 1 $RETRY_COUNT); do \
@@ -252,7 +264,7 @@ RUN mkdir -p /tmp/.config /tmp/.cache /tmp/.local/share \
 USER 1000:0
 
 # Verify Go remains available through the non-root login shell used by tasks.
-RUN /bin/bash -lc 'command -v go && go version && command -v gofmt && command -v rg && rg --version'
+RUN /bin/bash -lc 'command -v go && go version && command -v gofmt && command -v rg && rg --version && command -v golangci-lint && golangci-lint --version'
 
 WORKDIR ${WORKSPACE_DIR}
 
